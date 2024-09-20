@@ -16,46 +16,46 @@ hf = HuggingFaceHub(
     model_kwargs={"temperature": 0.1, "max_length": 500}
 
 )
-prompt_template = """
-Use the following piece of context to answer the question asked.
-Please try to provide the answer only based on the context
+# prompt_template = """
+# Use the following piece of context to answer the question asked.
+# Please try to provide the answer only based on the context
 
-{context}
-Question:{question}
+# {context}
+# Question:{question}
 
-Helpful Answers:
- """
+# Helpful Answers:
+#  """
 
-prompt = PromptTemplate(template=prompt_template,
-                        input_variables=["context", "question"])
+# prompt = PromptTemplate(template=prompt_template,
+#                         input_variables=["context", "question"])
 
 app = Flask(__name__)
 
 # read the pdfs from the folder
-loader = PyPDFDirectoryLoader("us census")
-documents = loader.load()
+# loader = PyPDFDirectoryLoader("us census")
+# documents = loader.load()
 
-text_splitter = RecursiveCharacterTextSplitter(
-    chunk_size=1000, chunk_overlap=200)
-final_documents = text_splitter.split_documents(documents)
+# text_splitter = RecursiveCharacterTextSplitter(
+#     chunk_size=1000, chunk_overlap=200)
+# final_documents = text_splitter.split_documents(documents)
 
-hugging_face = HuggingFaceBgeEmbeddings(
-    model_name="BAAI/bge-small-en-v1.5",
-    model_kwargs={'device': 'cpu'},
-    encode_kwargs={'normalize_embeddings': True}
-)
-vector_db = FAISS.from_documents(final_documents[:100], hugging_face)
-retriever = vector_db.as_retriever(
-    search_type="similarity", search_kwargs={"k": 3})
+# hugging_face = HuggingFaceBgeEmbeddings(
+#     model_name="BAAI/bge-small-en-v1.5",
+#     model_kwargs={'device': 'cpu'},
+#     encode_kwargs={'normalize_embeddings': True}
+# )
+# vector_db = FAISS.from_documents(final_documents[:100], hugging_face)
+# retriever = vector_db.as_retriever(
+#     search_type="similarity", search_kwargs={"k": 3})
 
 
-retrievalQA = RetrievalQA.from_chain_type(
-    llm=hf,
-    chain_type="stuff",
-    retriever=retriever,
-    return_source_documents=True,
-    chain_type_kwargs={"prompt": prompt}
-)
+# retrievalQA = RetrievalQA.from_chain_type(
+#     llm=hf,
+#     chain_type="stuff",
+#     retriever=retriever,
+#     return_source_documents=True,
+#     chain_type_kwargs={"prompt": prompt}
+# )
 
 
 @app.route('/llm', methods=['POST'])
@@ -63,7 +63,7 @@ def llm_call():
     data = request.json
     query = data['query']
     print(query)
-    result = retrievalQA.invoke({"query": query})
+    result = hf.invoke(query)
     return jsonify({"message": result['result']})
 
 
